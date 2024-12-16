@@ -165,3 +165,4 @@ ai/.DS_Store
 ai/outputs/models/model/model.safetensors
 /frontend/node_modules
 frontend/package-lock.json
+/ai/outputs/checkpoints

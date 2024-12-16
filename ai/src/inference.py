@@ -10,7 +10,8 @@ from utils.sql_assistant import SQLAssistant
 
 def main():
     # 데이터베이스 경로 설정
-    db_path = os.path.join(PROJECT_ROOT, "data", "interaction_data.csv")
+    db_path = os.path.join(PROJECT_ROOT, "..", "backend", "data", "simulation_logs.db")
+    print(db_path)
     
     try:
         assistant = SQLAssistant(db_path)

@@ -1,0 +1,49 @@
+{
+    "dataset": [
+        {
+            "input": "Show by 94ec561778bcbc58cca8fc3d793de9ab950512d5f604bdd5db13dc55f542b3c5488056de920f58e629dc5b79b26887a34fe0a07260cea92b49a89f6b7927661342 turnOn",
+            "parameters": {
+                "count": null,
+                "order_type": "DESC",
+                "needs_limit_1": false
+            },
+            "output": "SELECT * FROM transactions WHERE device_id = '94ec561778bcbc58cca8fc3d793de9ab950512d5f604bdd5db13dc55f542b3c5488056de920f58e629dc5b79b26887a34fe0a07260cea92b49a89f6b7927661342' AND function = 'turnOn' ORDER BY timestamp DESC"
+        },
+        {
+            "input": "Show light transactions most recent from 2c0e23913bcd0bcbecc9bd732c25a27b42976d94596b6bf4db6a14067549fcecdd8f844b9e0fc05e6bf715c2c6709655e634a4f1c4617a1268c13d417c8adc8072",
+            "parameters": {
+                "count": "all",
+                "order_type": "DESC",
+                "needs_limit_1": false
+            },
+            "output": "SELECT * FROM transactions WHERE device_id = '2c0e23913bcd0bcbecc9bd732c25a27b42976d94596b6bf4db6a14067549fcecdd8f844b9e0fc05e6bf715c2c6709655e634a4f1c4617a1268c13d417c8adc8072' AND device_type = 'Light' ORDER BY timestamp DESC"
+        },
+        {
+            "input": "Show light transactions by 34ae48ae750476135587c673d3da0bbd034e8b01d3d9dbf937936ccdd73877cb4eb23de92a085ddc3140e6f1768200f8d5f40ffd0e15294ff5e407e5509c8c33fd to 1623c0779f8304f51f55734cf0f76322e0c3b4c95b31fff95fe88083ef785d522961fc87b416a8290f0919337d18e237e7b5af09ee9a08a9ba9b4366342727afc1",
+            "parameters": {
+                "count": null,
+                "order_type": "DESC",
+                "needs_limit_1": false
+            },
+            "output": "SELECT * FROM transactions WHERE user_id = '1623c0779f8304f51f55734cf0f76322e0c3b4c95b31fff95fe88083ef785d522961fc87b416a8290f0919337d18e237e7b5af09ee9a08a9ba9b4366342727afc1' AND device_id = '34ae48ae750476135587c673d3da0bbd034e8b01d3d9dbf937936ccdd73877cb4eb23de92a085ddc3140e6f1768200f8d5f40ffd0e15294ff5e407e5509c8c33fd' AND device_type = 'Light' ORDER BY timestamp DESC"
+        },
+        {
+            "input": "Show latest",
+            "parameters": {
+                "count": null,
+                "order_type": "DESC",
+                "needs_limit_1": true
+            },
+            "output": "SELECT * FROM transactions ORDER BY timestamp DESC LIMIT 1"
+        },
+        {
+            "input": "Show to 725a632bc52ed3c40312d9cfe87fd5d6cf5b58975c0b24bfc84cf0b354e163f19c6b4c791d2b8c0259d391a15fa08a485d87d4ed21c376f317b6087f3e65235df1 setColor latest light transactions from 0da2b6e40d1785d45cf48c1af95cc90ac7c1d011d17507a9283166f359986d8800c5aa911e3014d3feecff1d422cb712ef74b6ed2a17b759cf0289f0d1062ad142",
+            "parameters": {
+                "count": null,
+                "order_type": "DESC",
+                "needs_limit_1": true
+            },
+            "output": "SELECT * FROM transactions WHERE user_id = '725a632bc52ed3c40312d9cfe87fd5d6cf5b58975c0b24bfc84cf0b354e163f19c6b4c791d2b8c0259d391a15fa08a485d87d4ed21c376f317b6087f3e65235df1' AND device_id = '0da2b6e40d1785d45cf48c1af95cc90ac7c1d011d17507a9283166f359986d8800c5aa911e3014d3feecff1d422cb712ef74b6ed2a17b759cf0289f0d1062ad142' AND function = 'setColor' AND device_type = 'Light' ORDER BY timestamp DESC LIMIT 1"
+        }
+    ]
+}

@@ -5,121 +5,117 @@ from datetime import datetime
 
 class QueryInputGenerator:
     def __init__(self):
-        # Define device functions
         self.device_functions = {
             'Speaker': ['turnOn', 'turnOff', 'getJoke', 'getWeather', 'getNews', 'getTime', 'getReminder', 'getMusic'],
             'Light': ['turnOn', 'turnOff', 'setBrightness', 'setMode', 'setColor']
         }
-
-        # Define available modes for Light
+        
         self.light_modes = ['normal', 'night', 'reading', 'party']
         self.light_colors = ['red', 'green', 'blue', 'yellow', 'white']
-        self.brightness_values = [i for i in range(1, 101)]  # Brightness from 1 to 100
+        self.brightness_values = [i for i in range(1, 101)]
         
-        self.orders = ['latest', 'oldest', 'recent', 'most recent']
-        
-        self.number_words = {
-            1: ['one', '1', 'single'],
-            2: ['two', '2'],
-            3: ['three', '3'],
-            4: ['four', '4'],
-            5: ['five', '5'],
-            6: ['six', '6'],
-            7: ['seven', '7'],
-            8: ['eight', '8'],
-            9: ['nine', '9'],
-            10: ['ten', '10']
-        }
+        # Order related keywords
+        self.orders = ['latest', 'most recent', 'last', 'oldest', 'first']
+        self.desc_orders = ['latest', 'most recent', 'last']  # 내림차순(최신순)
+        self.asc_orders = ['oldest', 'first']  # 오름차순(과거순)
 
     def random_pk(self):
-        """Generates a random public key (hex string)"""
         return ''.join(random.choices('abcdef0123456789', k=130))
 
-    def get_random_count(self):
-        """Returns a count as a number, word, or 'all'"""
-        count_type = random.choice(['none', 'number', 'all'])
-        
-        if count_type == 'none':
-            return None
-        elif count_type == 'all':
-            return 'all'
-        else:
-            number = random.randint(1, 10)
-            use_word = random.choice([True, False])
-            return random.choice(self.number_words[number]) if use_word else str(number)
-
     def generate_conditions(self):
-        """Generates random filter conditions for the query"""
-        conditions = []
-        to_address = self.random_pk() if random.choice([True, False]) else None
-        from_or_by_address = self.random_pk() if random.choice([True, False]) else None
-        device_type = random.choice(['Speaker', 'Light'])
+        conditions = [
+            'from_by_hex',
+            'to_hex',
+            'function',
+            'device_type',
+            'count',
+            'order'
+        ]
         
-        # Add address-related conditions (optional)
-        if to_address:
-            conditions.append(f"to {to_address}")
-        if from_or_by_address:
-            if random.choice([True, False]):
-                conditions.append(f"from {from_or_by_address}")
-            else:
-                conditions.append(f"by {from_or_by_address}")
+        num_conditions = random.randint(1, len(conditions))
+        selected_conditions = random.sample(conditions, num_conditions)
         
-        # Add device-related conditions (Speaker or Light)
-        if device_type == 'Speaker':
-            conditions.append("device_type = 'Speaker'")
-        else:
-            conditions.append("device_type = 'Light'")
-
-        # Fallback filter if no condition is generated
-        if not conditions:
-            fallback_filter = random.choice(['to', 'from', 'by', 'device_type'])
-            if fallback_filter == 'to':
-                conditions.append(f"to {self.random_pk()}")
-            elif fallback_filter in ['from', 'by']:
-                address = self.random_pk()
-                conditions.append(f"{fallback_filter} {address}")
-            else:
-                conditions.append(f"device_type = '{device_type}'")
+        query_parts = []
+        device = None
+        has_count = False
+        has_order = False
         
-        return " ".join(conditions).strip()
+        for condition in selected_conditions:
+            if condition == 'from_by_hex':
+                hex_from = self.random_pk()
+                use_from = random.choice([True, False])
+                query_parts.append(f"{'from' if use_from else 'by'} {hex_from}")
+            
+            elif condition == 'to_hex':
+                hex_to = self.random_pk()
+                query_parts.append(f"to {hex_to}")
+            
+            elif condition == 'function':
+                if not device:
+                    device = random.choice(['Speaker', 'Light'])
+                function = random.choice(self.device_functions[device])
+                query_parts.append(f"{function}")
+            
+            elif condition == 'device_type':
+                if not device:
+                    device = random.choice(['Speaker', 'Light'])
+                query_parts.append(f"{device.lower()} transactions")
+            
+            elif condition == 'count':
+                has_count = True
+                count_type = random.choice(['all', None])
+                if count_type == 'all':
+                    query_parts.insert(0, count_type)
+            
+            elif condition == 'order':
+                has_order = True
+                order = random.choice(self.orders)
+                query_parts.append(order)
+        
+        # Add order info to return value
+        order_info = {
+            'has_order': has_order,
+            'has_count': has_count
+        }
+        
+        return " ".join(query_parts).strip(), order_info
 
     def generate_input(self):
-        """Generates a random input command"""
-        device_type = random.choice(['Speaker', 'Light'])
-        function = random.choice(self.device_functions[device_type])
-        count = self.get_random_count()
-        order = random.choice(self.orders) if random.choice([True, False]) else None
+        conditions, order_info = self.generate_conditions()
         
-        input_parts = ['Show']
-        input_parts.append(function)
-        if count is not None:
-            input_parts.append(str(count))
-        if order:
-            input_parts.append(order)
-        input_parts.append(self.generate_conditions())
-        
-        return " ".join(input_parts).strip(), count
+        # Extract count if exists
+        count = None
+        if conditions.startswith('all '):
+            count = 'all'
+            conditions = conditions[4:]
 
+        # Build final query
+        query = f"Show {conditions}"
+        
+        # Determine if we need to set LIMIT 1
+        needs_limit_1 = False
+        
+        # If query has order keywords but no 'all' count, set LIMIT 1
+        if any(order in query.lower() for order in self.orders) and count != 'all':
+            needs_limit_1 = True
+        
+        # If no explicit order in query, add default DESC order
+        order_type = None
+        if any(order in query.lower() for order in self.desc_orders):
+            order_type = 'DESC'
+        elif any(order in query.lower() for order in self.asc_orders):
+            order_type = 'ASC'
+        else:
+            order_type = 'DESC'  # 기본값
+        
+        return query.strip(), count, order_type, needs_limit_1
 
 class QueryOutputGenerator:
     def __init__(self):
         self.functions = QueryInputGenerator().device_functions
 
-    def word_to_number(self, word, number_words):
-        """Converts word representation of numbers to actual numbers"""
-        if word is None or word == 'all':
-            return word
-        
-        if str(word).isdigit():
-            return str(word)
-            
-        for num, words in number_words.items():
-            if word.lower() in [w.lower() for w in words]:
-                return str(num)
-        return word
-
-    def generate_sql_query(self, input_text, count=None, number_words=None):
-        """Generates SQL query based on input text and count"""
+    def generate_sql_query(self, input_text, count=None, order_type='DESC', needs_limit_1=False):
+        """Generates SQL query based on input text and parameters"""
         base_query = "SELECT * FROM transactions"
         conditions = []
 
@@ -129,36 +125,39 @@ class QueryOutputGenerator:
             conditions.append(f"user_id = '{pk}'")
         
         if "from " in input_text or "by " in input_text:
-            device_pk = input_text.split("from ")[-1].split()[0] if "from " in input_text else input_text.split("by ")[-1].split()[0]
+            # Handle both 'from' and 'by' cases
+            if "from " in input_text:
+                device_pk = input_text.split("from ")[-1].split()[0]
+            else:
+                device_pk = input_text.split("by ")[-1].split()[0]
             conditions.append(f"device_id = '{device_pk}'")
         
+        # Function filtering
         if any(func in input_text for func in self.functions['Speaker'] + self.functions['Light']):
             func_name = next(func for func in self.functions['Speaker'] + self.functions['Light'] if func in input_text)
             conditions.append(f"function = '{func_name}'")
         
+        # Device type filtering
+        if "speaker" in input_text.lower():
+            conditions.append("device_type = 'Speaker'")
+        elif "light" in input_text.lower():
+            conditions.append("device_type = 'Light'")
+        
+        # Add WHERE clause if conditions exist
         if conditions:
             base_query += " WHERE " + " AND ".join(conditions)
         
-        # Handle ordering
-        order_needed = False
-        if any(word in input_text.lower() for word in ['latest', 'most recent', 'recent']):
-            base_query += " ORDER BY timestamp DESC"
-            order_needed = True
-        elif "oldest" in input_text:
-            base_query += " ORDER BY timestamp ASC"
-            order_needed = True
+        # Add ORDER BY
+        base_query += f" ORDER BY timestamp {order_type}"
         
-        # Handle limit
-        if count and count != 'all':
-            count_num = self.word_to_number(count, number_words)
-            if count_num and str(count_num).isdigit():
-                base_query += f" LIMIT {count_num}"
-        elif order_needed and not count:
-            # If no count specified but has ordering keywords, limit to 1
+        # Handle LIMIT
+        if count == 'all':
+            # No LIMIT when 'all' is specified
+            pass
+        elif needs_limit_1:
             base_query += " LIMIT 1"
         
         return base_query
-
 
 class QueryDatasetGenerator:
     def __init__(self):
@@ -169,14 +168,25 @@ class QueryDatasetGenerator:
     def generate_dataset(self, n=10):
         """Generates n samples of input-query pairs"""
         for _ in range(n):
-            input_text, count = self.input_generator.generate_input()
+            # Get input query and parameters
+            input_text, count, order_type, needs_limit_1 = self.input_generator.generate_input()
+            
+            # Generate SQL query
             query = self.output_generator.generate_sql_query(
-                input_text, 
-                count, 
-                self.input_generator.number_words
+                input_text,
+                count,
+                order_type,
+                needs_limit_1
             )
+            
+            # Add to dataset with all parameters for reference
             self.dataset["dataset"].append({
                 "input": input_text,
+                "parameters": {
+                    "count": count,
+                    "order_type": order_type,
+                    "needs_limit_1": needs_limit_1
+                },
                 "output": query
             })
 
@@ -184,8 +194,8 @@ class QueryDatasetGenerator:
 
     def save_to_file(self, filepath="query_data.json"):
         """Saves the generated dataset to a JSON file"""
-        with open(filepath, 'w') as json_file:
-            json.dump(self.dataset, json_file, indent=4)
+        with open(filepath, 'w', encoding='utf-8') as json_file:
+            json.dump(self.dataset, json_file, indent=4, ensure_ascii=False)
 
 
 if __name__ == "__main__":
