@@ -32,10 +32,9 @@ class SQLDataset:
             truncation=True,
             return_tensors="pt"
         )
-
-        # Move tensors to specified device
+        
         return {
-            'input_ids': inputs['input_ids'].squeeze().to(self.device),
-            'attention_mask': inputs['attention_mask'].squeeze().to(self.device),
-            'labels': labels['input_ids'].squeeze().to(self.device)
+            'input_ids': inputs['input_ids'].squeeze(0),
+            'attention_mask': inputs['attention_mask'].squeeze(0),
+            'labels': labels['input_ids'].squeeze(0)
         }

@@ -81,7 +81,7 @@ class SQLTrainer:
             TrainingArguments: Configured training arguments
         """
         return TrainingArguments(
-            output_dir=self.config.output_dir,
+            output_dir=self.config.chekpoint_dir,
             num_train_epochs=self.config.num_train_epochs,
             per_device_train_batch_size=self.config.train_batch_size,
             per_device_eval_batch_size=self.config.eval_batch_size,
@@ -113,7 +113,8 @@ class SQLTrainer:
             model=self.model,
             args=training_args,
             train_dataset=train_dataset,
-            eval_dataset=val_dataset
+            eval_dataset=val_dataset,
+            data_collator=None 
         )
         
         trainer.train()

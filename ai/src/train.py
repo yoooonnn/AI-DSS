@@ -1,9 +1,9 @@
 import os
 import sys
 import argparse
-from config.model_config import ModelConfig
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
+from config.model_config import ModelConfig
 from trainer.sql_trainer import SQLTrainer
 
 def parse_arguments():
@@ -54,7 +54,7 @@ def main():
             trainer.train(train_dataset, val_dataset)
             
             # Save the trained model
-            save_dir = os.path.join(config.output_dir, 'final_model')
+            save_dir = os.path.join(config.output_dir)
             print(f"Saving model to: {save_dir}")
             trainer.save_model(save_dir)
 
