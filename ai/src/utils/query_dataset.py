@@ -14,9 +14,9 @@ class QueryInputGenerator:
         self.light_colors = ['red', 'green', 'blue', 'yellow', 'white']
         self.brightness_values = [i for i in range(1, 101)]
         
-        # Order related keywords
-        self.orders = ['latest', 'most recent', 'last', 'oldest', 'first']
-        self.desc_orders = ['latest', 'most recent', 'last']  # 내림차순(최신순)
+        # Order related keywords - latest는 기본값이므로 제외
+        self.orders = ['most recent', 'last', 'oldest', 'first']
+        self.desc_orders = ['most recent', 'last']  # 내림차순(최신순)
         self.asc_orders = ['oldest', 'first']  # 오름차순(과거순)
 
     def random_pk(self):
@@ -54,7 +54,7 @@ class QueryInputGenerator:
                 if not device:
                     device = random.choice(['Speaker', 'Light'])
                 function = random.choice(self.device_functions[device])
-                query_parts.append(f"{function}")
+                query_parts.append(f"{function} function")
             
             elif condition == 'device_type':
                 if not device:
@@ -69,10 +69,9 @@ class QueryInputGenerator:
             
             elif condition == 'order':
                 has_order = True
-                order = random.choice(self.orders)
+                order = random.choice(self.orders)  # latest 제외
                 query_parts.append(order)
         
-        # Add order info to return value
         order_info = {
             'has_order': has_order,
             'has_count': has_count
@@ -99,16 +98,14 @@ class QueryInputGenerator:
         if any(order in query.lower() for order in self.orders) and count != 'all':
             needs_limit_1 = True
         
-        # If no explicit order in query, add default DESC order
-        order_type = None
-        if any(order in query.lower() for order in self.desc_orders):
-            order_type = 'DESC'
-        elif any(order in query.lower() for order in self.asc_orders):
+        # If no explicit order in query, use DESC as default
+        if any(order in query.lower() for order in self.asc_orders):
             order_type = 'ASC'
         else:
-            order_type = 'DESC'  # 기본값
+            order_type = 'DESC'  # 명시적 order가 없거나 desc_orders인 경우 DESC
         
         return query.strip(), count, order_type, needs_limit_1
+
 
 class QueryOutputGenerator:
     def __init__(self):
@@ -125,7 +122,6 @@ class QueryOutputGenerator:
             conditions.append(f"user_id = '{pk}'")
         
         if "from " in input_text or "by " in input_text:
-            # Handle both 'from' and 'by' cases
             if "from " in input_text:
                 device_pk = input_text.split("from ")[-1].split()[0]
             else:
@@ -147,17 +143,17 @@ class QueryOutputGenerator:
         if conditions:
             base_query += " WHERE " + " AND ".join(conditions)
         
-        # Add ORDER BY
+        # Always add ORDER BY with explicit direction
         base_query += f" ORDER BY timestamp {order_type}"
         
         # Handle LIMIT
         if count == 'all':
-            # No LIMIT when 'all' is specified
-            pass
+            pass  # No LIMIT when 'all' is specified
         elif needs_limit_1:
             base_query += " LIMIT 1"
         
         return base_query
+
 
 class QueryDatasetGenerator:
     def __init__(self):
@@ -166,34 +162,22 @@ class QueryDatasetGenerator:
         self.dataset = {"dataset": []}
 
     def generate_dataset(self, n=10):
-        """Generates n samples of input-query pairs"""
         for _ in range(n):
-            # Get input query and parameters
             input_text, count, order_type, needs_limit_1 = self.input_generator.generate_input()
-            
-            # Generate SQL query
             query = self.output_generator.generate_sql_query(
                 input_text,
                 count,
                 order_type,
                 needs_limit_1
             )
-            
-            # Add to dataset with all parameters for reference
             self.dataset["dataset"].append({
                 "input": input_text,
-                "parameters": {
-                    "count": count,
-                    "order_type": order_type,
-                    "needs_limit_1": needs_limit_1
-                },
                 "output": query
             })
 
         return len(self.dataset["dataset"])
 
     def save_to_file(self, filepath="query_data.json"):
-        """Saves the generated dataset to a JSON file"""
         with open(filepath, 'w', encoding='utf-8') as json_file:
             json.dump(self.dataset, json_file, indent=4, ensure_ascii=False)
 
