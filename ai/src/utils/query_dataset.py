@@ -1,49 +1,22 @@
 import random
 import json
 import os
+from datetime import datetime
 
 class QueryInputGenerator:
     def __init__(self):
-        self.commands = [
-            'Show', 'Get', 'Find', 'List',  
-            'Display', 'Retrieve', 'Search', 'Fetch'
-        ]
+        # Define device functions
+        self.device_functions = {
+            'Speaker': ['turnOn', 'turnOff', 'getJoke', 'getWeather', 'getNews', 'getTime', 'getReminder', 'getMusic'],
+            'Light': ['turnOn', 'turnOff', 'setBrightness', 'setMode', 'setColor']
+        }
+
+        # Define available modes for Light
+        self.light_modes = ['normal', 'night', 'reading', 'party']
+        self.light_colors = ['red', 'green', 'blue', 'yellow', 'white']
+        self.brightness_values = [i for i in range(1, 101)]  # Brightness from 1 to 100
         
-        self.orders = [
-            'latest',        # most recent
-            'oldest',        # oldest
-            'recent',        # recent
-            'most recent'    # most recent
-        ]
-        
-        # System functions related to actions
-        self.functions = [
-            # Light (조명)
-            "turnOn", "turnOff", "setBrightness", "setColorTemperature",  # 조명 관련 기능
-
-            # Refrigerator (냉장고)
-            "setTemperature", "checkStatus", "checkTemperature",  # 냉장고 관련 기능
-
-            # Robot Vacuum (로봇 청소기)
-            "startCleaning", "stopCleaning", "setCleaningMode", "charge", "checkBattery", "getStatus",  # 로봇 청소기 관련 기능
-
-            # Washing Machine (세탁기)
-            "startWash", "stopWash", "setWashMode", "spinDry", "stopSpinDry", "checkWashProgress",  # 세탁기 관련 기능
-
-            # Air Purifier (공기 청정기)
-            "setAirQuality", "getStatus", "checkAirQuality",  # 공기 청정기 관련 기능
-
-            # Air Conditioner (에어컨)
-            "setFanSpeed", "setMode"  # 에어컨 관련 기능
-        ]
-
-        
-        # Transaction-related words indicating user interaction
-        self.transaction_words = [
-            'transaction',      # Transaction event
-            'interaction',      # User-system interaction
-            'txn'               # Abbreviation for transaction
-        ]
+        self.orders = ['latest', 'oldest', 'recent', 'most recent']
         
         self.number_words = {
             1: ['one', '1', 'single'],
@@ -58,6 +31,10 @@ class QueryInputGenerator:
             10: ['ten', '10']
         }
 
+    def random_pk(self):
+        """Generates a random public key (hex string)"""
+        return ''.join(random.choices('abcdef0123456789', k=130))
+
     def get_random_count(self):
         """Returns a count as a number, word, or 'all'"""
         count_type = random.choice(['none', 'number', 'all'])
@@ -71,17 +48,13 @@ class QueryInputGenerator:
             use_word = random.choice([True, False])
             return random.choice(self.number_words[number]) if use_word else str(number)
 
-    def random_pk(self):
-        """Generates a random public key (hex string)"""
-        return ''.join(random.choices('abcdef0123456789', k=130))
-
     def generate_conditions(self):
         """Generates random filter conditions for the query"""
         conditions = []
         to_address = self.random_pk() if random.choice([True, False]) else None
         from_or_by_address = self.random_pk() if random.choice([True, False]) else None
-        func = random.choice(self.functions) if random.choice([True, False]) else None
-
+        device_type = random.choice(['Speaker', 'Light'])
+        
         # Add address-related conditions (optional)
         if to_address:
             conditions.append(f"to {to_address}")
@@ -91,45 +64,46 @@ class QueryInputGenerator:
             else:
                 conditions.append(f"by {from_or_by_address}")
         
-        # Add function-related conditions (if any)
-        if func:
-            conditions.append(f"{func} function")
+        # Add device-related conditions (Speaker or Light)
+        if device_type == 'Speaker':
+            conditions.append("device_type = 'Speaker'")
+        else:
+            conditions.append("device_type = 'Light'")
 
         # Fallback filter if no condition is generated
         if not conditions:
-            fallback_filter = random.choice(['to', 'from', 'by', 'func', 'event'])
+            fallback_filter = random.choice(['to', 'from', 'by', 'device_type'])
             if fallback_filter == 'to':
                 conditions.append(f"to {self.random_pk()}")
             elif fallback_filter in ['from', 'by']:
                 address = self.random_pk()
                 conditions.append(f"{fallback_filter} {address}")
             else:
-                conditions.append(f"{random.choice(self.functions)} function")
+                conditions.append(f"device_type = '{device_type}'")
         
         return " ".join(conditions).strip()
 
     def generate_input(self):
         """Generates a random input command"""
-        command = random.choice(self.commands)
-        transaction_word = random.choice(self.transaction_words) if random.choice([True, False]) else None  # Select only one transaction word
+        device_type = random.choice(['Speaker', 'Light'])
+        function = random.choice(self.device_functions[device_type])
         count = self.get_random_count()
         order = random.choice(self.orders) if random.choice([True, False]) else None
         
-        input_parts = [command]
+        input_parts = ['Show']
+        input_parts.append(function)
         if count is not None:
             input_parts.append(str(count))
         if order:
             input_parts.append(order)
-        if transaction_word:
-            input_parts.append(transaction_word)
         input_parts.append(self.generate_conditions())
-
+        
         return " ".join(input_parts).strip(), count
 
 
 class QueryOutputGenerator:
     def __init__(self):
-        self.functions = QueryInputGenerator().functions
+        self.functions = QueryInputGenerator().device_functions
 
     def word_to_number(self, word, number_words):
         """Converts word representation of numbers to actual numbers"""
@@ -149,18 +123,18 @@ class QueryOutputGenerator:
         base_query = "SELECT * FROM transactions"
         conditions = []
 
-        # Handle address and function filtering
+        # Handle device and function filtering
         if "to " in input_text:
             pk = input_text.split("to ")[-1].split()[0]
-            conditions.append(f"pk = '{pk}'")
+            conditions.append(f"user_id = '{pk}'")
         
         if "from " in input_text or "by " in input_text:
-            src_pk = input_text.split("from ")[-1].split()[0] if "from " in input_text else input_text.split("by ")[-1].split()[0]
-            conditions.append(f"src_pk = '{src_pk}'")
+            device_pk = input_text.split("from ")[-1].split()[0] if "from " in input_text else input_text.split("by ")[-1].split()[0]
+            conditions.append(f"device_id = '{device_pk}'")
         
-        if any(func in input_text for func in self.functions):
-            func_name = next(func for func in self.functions if func in input_text)
-            conditions.append(f"func_name = '{func_name}'")
+        if any(func in input_text for func in self.functions['Speaker'] + self.functions['Light']):
+            func_name = next(func for func in self.functions['Speaker'] + self.functions['Light'] if func in input_text)
+            conditions.append(f"function = '{func_name}'")
         
         if conditions:
             base_query += " WHERE " + " AND ".join(conditions)
@@ -173,9 +147,6 @@ class QueryOutputGenerator:
         elif "oldest" in input_text:
             base_query += " ORDER BY timestamp ASC"
             order_needed = True
-        elif count and count != 'all':
-            base_query += " ORDER BY timestamp DESC"
-            order_needed = True
         
         # Handle limit
         if count and count != 'all':
@@ -187,6 +158,7 @@ class QueryOutputGenerator:
             base_query += " LIMIT 1"
         
         return base_query
+
 
 class QueryDatasetGenerator:
     def __init__(self):
@@ -215,6 +187,7 @@ class QueryDatasetGenerator:
         with open(filepath, 'w') as json_file:
             json.dump(self.dataset, json_file, indent=4)
 
+
 if __name__ == "__main__":
     # Generate dataset
     generator = QueryDatasetGenerator()
@@ -222,7 +195,7 @@ if __name__ == "__main__":
     
     # Save to JSON file
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    filepath = os.path.join(current_dir, "..", "..", "ai", "data", "query_data.json")
+    filepath = os.path.join(current_dir, "..", "..", "data", "query_data.json")
     generator.save_to_file(filepath)
     
     print(f"Generated {num_samples} samples.")
