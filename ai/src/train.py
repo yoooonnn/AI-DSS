@@ -1,13 +1,17 @@
 # src/train.py
 import os
+import sys
 from config.model_config import ModelConfig
-from train.trainer import SQLTrainer
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
+from trainer.sql_trainer import SQLTrainer
 
 def main():
     """
     Main function to run the training pipeline.
     Handles model configuration, data loading, and training execution.
     """
+
     # Load configuration
     config = ModelConfig()
 
@@ -22,8 +26,8 @@ def main():
     file_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'query_data.json')
     print(file_path)
     try:
+
         # Load training data
-        
         with open(file_path, 'r', encoding='utf-8') as f:
             json_data = f.read()
         
@@ -45,5 +49,5 @@ def main():
     except Exception as e:
         print(f"Error during training: {str(e)}")
 
-    if __name__ == "__main__":
-        main()
+if __name__ == "__main__":
+    main()
