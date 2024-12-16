@@ -1,5 +1,7 @@
 # simulator/run.py
 
+import schedule
+import timeit
 import os
 import sys
 import random
@@ -28,26 +30,25 @@ def run_simulation():
     user3_id = simulator.add_user('Student')
 
     # Available device types
-    device_types = ['light', 'robot_vacuum', 'washing_machine', 'air_conditioner']
+    device_types = ['Light', 'Speaker']
 
-    # Set random number of devices per user
-    logging.info("Adding random devices for each user...")
-    num_devices_user1 = random.randint(1, 4)
-    num_devices_user2 = random.randint(1, 4)
-    num_devices_user3 = random.randint(1, 4)
+    # Set the number of devices to add per user (1 Light and 1 Speaker)
+    logging.info("Adding 1 Light and 1 Smart Speaker for each user...")
 
-    # Add devices for each user
-    for _ in range(num_devices_user1):
-        simulator.add_device(random.choice(device_types), user1_id)
-    for _ in range(num_devices_user2):
-        simulator.add_device(random.choice(device_types), user2_id)
-    for _ in range(num_devices_user3):
-        simulator.add_device(random.choice(device_types), user3_id)
+    # Add Light and Smart Speaker devices for each user
+    simulator.add_device('Light', user1_id)
+    simulator.add_device('Speaker', user1_id)
+
+    simulator.add_device('Light', user2_id)
+    simulator.add_device('Speaker', user2_id)
+
+    simulator.add_device('Light', user3_id)
+    simulator.add_device('Speaker', user3_id)
 
     # Run simulation
     start_time = datetime.now()
     logging.info(f"Starting simulation at: {start_time}")
-    simulator.simulate(start_time, duration_hours=24)
+    simulator.simulate(start_time, duration_hours=0.1)
 
     # Send logs to backend
     logging.info("Simulation completed. Sending logs to backend...")

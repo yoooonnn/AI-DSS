@@ -11,6 +11,7 @@ light_states = {
 # Light device class
 class Light:
     def __init__(self, device_id, user_id):
+        self.device_type = 'Light'
         self.device_id = device_id
         self.user_id = user_id
         self.state = {
@@ -64,6 +65,7 @@ class Light:
 
         # Ensure that 'function' is always set before returning the dictionary
         return {
+            'device_type': self.device_type,
             'device_id': self.device_id,
             'user_id': self.user_id,
             'action': action,  # 'mode', 'color', 'brightness', 'power' etc.

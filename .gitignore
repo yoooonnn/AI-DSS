@@ -163,3 +163,5 @@ cython_debug/
 ai/.DS_Store
 .DS_Store
 ai/outputs/models/model/model.safetensors
+/frontend/node_modules
+frontend/package-lock.json

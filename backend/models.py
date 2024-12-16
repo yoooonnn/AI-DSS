@@ -10,6 +10,7 @@ class SimulationLog(db.Model):
     
     # Define columns in the simulation_logs table
     id = db.Column(db.Integer, primary_key=True)  # Unique identifier for each log
+    device_type = db.Column(db.String(50), nullable=False) # device type
     device_id = db.Column(db.String(50), nullable=False)  # ID of the device
     user_id = db.Column(db.String(50), nullable=False)  # ID of the user
     action = db.Column(db.String(50), nullable=False)  # Action performed on the device
@@ -19,7 +20,8 @@ class SimulationLog(db.Model):
     state = db.Column(db.String(500), nullable=False) 
 
     
-    def __init__(self, device_id, user_id, action, value, function, timestamp, state):
+    def __init__(self, device_type, device_id, user_id, action, value, function, timestamp, state):
+        self.device_type = device_type
         self.device_id = device_id
         self.user_id = user_id
         self.action = action

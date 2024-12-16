@@ -1,5 +1,3 @@
-# simulatr/simulator.py
-
 from datetime import datetime, timedelta
 import random
 import sys
@@ -8,9 +6,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
 
 from devices.light import Light
-from devices.robot_vacuum import RobotVacuum
-from devices.washing_machine import WashingMachine
-from devices.air_conditioner import AirConditioner
+from devices.speaker import Speaker
 from utils.user_pattern import user_patterns
 
 # SmartHomeSimulator class that handles the simulation logic
@@ -28,14 +24,10 @@ class SmartHomeSimulator:
     
     def add_device(self, device_type, user_id):
         device_id = ''.join(random.choices('0123456789abcdef', k=130))
-        if device_type == 'light':
+        if device_type == 'Light':
             self.devices[device_id] = Light(device_id, user_id)  # Add a light device
-        elif device_type == 'robot_vacuum':
-            self.devices[device_id] = RobotVacuum(device_id, user_id)
-        elif device_type == 'washing_machine':
-            self.devices[device_id] = WashingMachine(device_id, user_id)
-        elif device_type == 'air_conditioner':
-            self.devices[device_id] = AirConditioner(device_id, user_id)
+        elif device_type == 'Speaker':
+            self.devices[device_id] = Speaker(device_id, user_id)
 
     def simulate(self, start_time, duration_hours):
         current_time = start_time
@@ -67,3 +59,4 @@ class SmartHomeSimulator:
         prob = pattern['interaction_probability']['weekday' if is_weekday else 'weekend']
         
         return is_active_hour and random.random() < prob
+

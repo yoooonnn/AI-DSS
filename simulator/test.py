@@ -45,6 +45,7 @@ def test_simulator():
     
     # 로그 출력 형식 개선
     for log in simulator.logs:
+        device_type = log['device_type']
         device_id = log['device_id']
         user_id = log['user_id']
         action = log['action']
@@ -54,7 +55,7 @@ def test_simulator():
         function = log['function'] 
 
         # Print out the log in a readable way
-        logging.info(f"Device: {device_id} (User: {user_id})")
+        logging.info(f"Device: {device_type} (User: {user_id})")
         logging.info(f"  Action: {action} -> Function: {function}")
         logging.info(f"  Value: {value}")
         logging.info(f"  Timestamp: {timestamp}")
