@@ -1,3 +1,4 @@
+import torch
 from transformers import (
     T5ForConditionalGeneration, 
     T5Tokenizer,
@@ -26,8 +27,12 @@ class SQLTrainer:
             config: Configuration object containing model parameters
         """
         self.config = config
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print(f"Using device: {self.device}")
+
         self.tokenizer = T5Tokenizer.from_pretrained(config.model_name, legacy=True)
         self.model = T5ForConditionalGeneration.from_pretrained(config.model_name)
+        self.model.to(self.device)
         
     def prepare_data(self, json_data):
         """
@@ -55,13 +60,15 @@ class SQLTrainer:
             train_texts, 
             train_labels, 
             self.tokenizer, 
-            self.config.max_length
+            self.config.max_length,
+            device=self.device
         )
         val_dataset = SQLDataset(
             val_texts, 
             val_labels, 
             self.tokenizer, 
-            self.config.max_length
+            self.config.max_length,
+            device=self.device
         )
         
         return train_dataset, val_dataset
@@ -85,7 +92,8 @@ class SQLTrainer:
             eval_strategy=self.config.eval_strategy,
             save_strategy=self.config.save_strategy,
             load_best_model_at_end=True,
-            learning_rate=self.config.learning_rate
+            learning_rate=self.config.learning_rate,
+            no_cuda=False
         )
 
     def train(self, train_dataset, val_dataset):
@@ -130,7 +138,7 @@ class SQLTrainer:
             padding="max_length",
             truncation=True,
             return_tensors="pt"
-        )
+        ).to(self.device)
         
         outputs = self.model.generate(
             input_ids=inputs["input_ids"],
@@ -169,6 +177,8 @@ class SQLTrainer:
                       if not k.startswith('_')}
         with open(config_path, 'w') as f:
             json.dump(config_dict, f, indent=4)
+
+        self.model.to(self.device)
             
     def load_model(self, load_dir):
         """
@@ -191,3 +201,28 @@ class SQLTrainer:
             config_dict = json.load(f)
             for k, v in config_dict.items():
                 setattr(self.config, k, v)
+
+    def evaluate(self, val_dataset):
+        """
+        Evaluate the model on the validation dataset.
+        
+        Args:
+            val_dataset: Validation dataset
+            
+        Returns:
+            dict: Evaluation metrics
+        """
+        training_args = self.get_training_args()
+        
+        trainer = Trainer(
+            model=self.model,
+            args=training_args,
+            train_dataset=None,  # Not needed for evaluation
+            eval_dataset=val_dataset
+        )
+        
+        # Evaluate model
+        eval_results = trainer.evaluate()
+        print(f"Evaluation results: {eval_results}")
+        
+        return eval_results

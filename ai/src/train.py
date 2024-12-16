@@ -57,6 +57,10 @@ def main():
             save_dir = os.path.join(config.output_dir, 'final_model')
             print(f"Saving model to: {save_dir}")
             trainer.save_model(save_dir)
+
+            # Evaluation model
+            eval_results = trainer.evaluate(val_dataset)
+            print(f"Evaluation results: {eval_results}")
             
             # Test generation with sample input
             test_input = "Find all response to b2e6c6bdfa7c51ba3ada031b4a740baf509d72b3ab8e2272eac0919cd0af68d614766940eb8f60491c77ff762fa0bea5eb5fc87d8dacff0c413774e53a13c59441"
