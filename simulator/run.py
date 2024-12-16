@@ -2,32 +2,61 @@
 
 import os
 import sys
+import random
 from datetime import datetime
+import logging
 
-# Add the current directory to the system path for importing modules
+# Add current directory to system path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
 
-# Import the SmartHomeSimulator class from the simulator module
+# Import simulator and log handler
 from simulator import SmartHomeSimulator
+from log_api_handler import handle_log
 
-# Initialize the simulator
-simulator = SmartHomeSimulator()
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
-# Add users
-user1_id = simulator.add_user('Office Worker')  # User 1: Office Worker
-user2_id = simulator.add_user('Remote Worker')  # User 2: Remote Worker
-user3_id = simulator.add_user('Student')  # User 3: Student
+def run_simulation():
+    # Initialize simulator
+    logging.info("Initializing Smart Home Simulator...")
+    simulator = SmartHomeSimulator()
 
-# Add devices
-simulator.add_device('light', user1_id)  # Office worker's light
-simulator.add_device('light', user2_id)  # Remote worker's light
-# ... Add more devices as needed
+    # Add users
+    logging.info("Adding users...")
+    user1_id = simulator.add_user('Office Worker')
+    user2_id = simulator.add_user('Remote Worker')
+    user3_id = simulator.add_user('Student')
 
-# Run the simulation
-start_time = datetime.now()  # Start time for the simulation (current time)
-simulator.simulate(start_time, duration_hours=24)  # Simulate for 24 hours
+    # Available device types
+    device_types = ['light', 'robot_vacuum', 'washing_machine', 'air_conditioner']
 
-# Save the results
-for log in simulator.logs:
-    # Code to save the log to a database (e.g., SQLite, PostgreSQL, etc.)
-    pass
+    # Set random number of devices per user
+    logging.info("Adding random devices for each user...")
+    num_devices_user1 = random.randint(1, 4)
+    num_devices_user2 = random.randint(1, 4)
+    num_devices_user3 = random.randint(1, 4)
+
+    # Add devices for each user
+    for _ in range(num_devices_user1):
+        simulator.add_device(random.choice(device_types), user1_id)
+    for _ in range(num_devices_user2):
+        simulator.add_device(random.choice(device_types), user2_id)
+    for _ in range(num_devices_user3):
+        simulator.add_device(random.choice(device_types), user3_id)
+
+    # Run simulation
+    start_time = datetime.now()
+    logging.info(f"Starting simulation at: {start_time}")
+    simulator.simulate(start_time, duration_hours=24)
+
+    # Send logs to backend
+    logging.info("Simulation completed. Sending logs to backend...")
+    handle_log(simulator.logs)
+
+if __name__ == "__main__":
+    try:
+        run_simulation()
+        logging.info("Simulation and log transmission completed successfully")
+    except Exception as e:
+        logging.error(f"Error during simulation: {str(e)}")
+        sys.exit(1)

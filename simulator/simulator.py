@@ -46,27 +46,15 @@ class SmartHomeSimulator:
             for device in self.devices.values():
                 # Generate actions for each device based on the current time
                 interaction = device.generate_action(current_time)
-                self.logs.append(interaction)
-            
+                # 로그를 찍어서 interaction이 제대로 생성되었는지 확인
+                if interaction:
+                    print(f"Generated interaction: {interaction}")
+                    self.logs.append(interaction)
+                else:
+                    print("No interaction generated.")
             # Move forward in time by a random amount (1 to 5 minutes)
             current_time += timedelta(minutes=random.randint(1, 5))
 
-        # Save all generated logs to the database
-        # self.save_logs_to_db()
-
-    # def save_logs_to_db(self):
-    #     # Save each log entry to the database
-    #     for log in self.logs:
-    #         simulation_log = SimulationLog(
-    #             device_id=log['device_id'],
-    #             user_id=log['user_id'],
-    #             action=log['action'],
-    #             value=log['value'],
-    #             timestamp=log['timestamp']
-    #         )
-    #         db.session.add(simulation_log)  # Add log to session
-    #     db.session.commit()  # Commit session to the database
-            
     def _should_interact(self, time, user_type):
         pattern = user_patterns[user_type]
         
