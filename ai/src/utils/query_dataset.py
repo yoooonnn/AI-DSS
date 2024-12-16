@@ -18,13 +18,25 @@ class QueryInputGenerator:
         
         # System functions related to actions
         self.functions = [
-            "turnOn", "turnOff", "setPower",       # Basic control
-            "pair", "unpair", "connect", "disconnect", "bind", "unbind",  # Connection management
-            "getStatus", "checkConnection", "checkBattery",  # Status checks
-            "reset", "restart", "update", "configure",  # System actions
-            "setVolume", "setBrightness", "setTemperature",  # Settings adjustments
-            "error", "update"  # system events
+            # Light (조명)
+            "turnOn", "turnOff", "setBrightness", "setColorTemperature",  # 조명 관련 기능
+
+            # Refrigerator (냉장고)
+            "setTemperature", "checkStatus", "checkTemperature",  # 냉장고 관련 기능
+
+            # Robot Vacuum (로봇 청소기)
+            "startCleaning", "stopCleaning", "setCleaningMode", "charge", "checkBattery", "getStatus",  # 로봇 청소기 관련 기능
+
+            # Washing Machine (세탁기)
+            "startWash", "stopWash", "setWashMode", "spinDry", "stopSpinDry", "checkWashProgress",  # 세탁기 관련 기능
+
+            # Air Purifier (공기 청정기)
+            "setAirQuality", "getStatus", "checkAirQuality",  # 공기 청정기 관련 기능
+
+            # Air Conditioner (에어컨)
+            "setFanSpeed", "setMode"  # 에어컨 관련 기능
         ]
+
         
         # Transaction-related words indicating user interaction
         self.transaction_words = [

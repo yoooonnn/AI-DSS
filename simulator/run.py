@@ -1,3 +1,5 @@
+# simulator/run.py
+
 import os
 import sys
 from datetime import datetime
@@ -12,15 +14,13 @@ from simulator import SmartHomeSimulator
 simulator = SmartHomeSimulator()
 
 # Add users
-simulator.users = {
-    1: 'Office Worker',  # User 1: Office worker
-    2: 'Remote Worker',  # User 2: Remote worker
-    3: 'Student'         # User 3: Student
-}
+user1_id = simulator.add_user('Office Worker')  # User 1: Office Worker
+user2_id = simulator.add_user('Remote Worker')  # User 2: Remote Worker
+user3_id = simulator.add_user('Student')  # User 3: Student
 
 # Add devices
-simulator.add_device(1, 'light', 1)  # Office worker's light
-simulator.add_device(2, 'light', 2)  # Remote worker's light
+simulator.add_device('light', user1_id)  # Office worker's light
+simulator.add_device('light', user2_id)  # Remote worker's light
 # ... Add more devices as needed
 
 # Run the simulation

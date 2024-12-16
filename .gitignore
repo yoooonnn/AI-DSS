@@ -162,3 +162,4 @@ cython_debug/
 #.idea/
 ai/.DS_Store
 .DS_Store
+ai/outputs/models/model/model.safetensors
