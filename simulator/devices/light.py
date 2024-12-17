@@ -1,3 +1,5 @@
+# simulator/devices/light.py
+
 import random
 
 # Possible states and actions for the light device

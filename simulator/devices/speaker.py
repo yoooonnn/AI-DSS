@@ -1,3 +1,5 @@
+# simulator/devices/speaker.py
+
 import random
 from datetime import datetime
 
