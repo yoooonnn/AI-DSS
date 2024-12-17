@@ -168,14 +168,17 @@ def process_and_augment_dataset(input_file: str, output_file: str, num_augmentat
         if original_query:
             augmented_queries = augmenter.augment(original_query, num_augmentations)
 
-            augmented_data.append({
-                "input": augmented_queries[0],  # 증강된 쿼리
-                "output": item.get("output", "")  # output은 그대로 유지
-            })
+            # 모든 증강된 쿼리 저장
+            for augmented_query in augmented_queries:
+                augmented_data.append({
+                    "input": augmented_query,
+                    "output": item.get("output", "")
+                })
 
     # 증강된 데이터 저장
     with open(output_file, "w", encoding="utf-8") as outfile:
         json.dump({"augmented_dataset": augmented_data}, outfile, ensure_ascii=False, indent=4)
+
 
 # 실행 예시
 if __name__ == "__main__":

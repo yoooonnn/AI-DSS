@@ -35,6 +35,28 @@ class IoTQueryGenerator:
         self.query_patterns = [
             {
                 'templates': [
+                    "Show all transactions",
+                    "Get a list of all transactions",
+                    "Retrieve every transaction record",
+                    "List all events from transactions"
+                ],
+                'sql_conditions': [],
+                'order': 'DESC'
+            },
+            {
+                'templates': [
+                    "Show only one transaction",
+                    "Retrieve a single transaction",
+                    "Get the latest transaction record",
+                    "Find one transaction event"
+                ],
+                'sql_conditions': [],
+                'order': 'DESC',
+                'limit': 1
+            },
+
+            {
+                'templates': [
                     "Show me the {device_type} history",
                     "Get all {device_type} records",
                     "Display {device_type} activities",
@@ -49,14 +71,14 @@ class IoTQueryGenerator:
             # Function Specific Queries
             {
                 'templates': [
-                    "When was the {function} function used",
-                    "Show me all {function} activities",
-                    "List every time {function} was used",
-                    "Display {function} events",
-                    "Get all {function} operations",
-                    "Find {function} history"
+                    "When was the {func} function used",
+                    "Show me all {func} activities",
+                    "List every time {func} was used",
+                    "Display {func} events",
+                    "Get all {func} operations",
+                    "Find {func} history"
                 ],
-                'sql_conditions': ['function'],
+                'sql_conditions': ['func'],
                 'order': 'DESC'
             },
             # Device Specific with Superlatives
@@ -102,12 +124,12 @@ class IoTQueryGenerator:
             # Complex Queries
             {
                 'templates': [
-                    "Find the {superlative} time user {user_id} used {function}",
-                    "Show me the {superlative} {function} action by {user_id}",
-                    "When did user {user_id} last use {function}",
-                    "Get the {superlative} {function} event for {user_id}"
+                    "Find the {superlative} time user {user_id} used {func}",
+                    "Show me the {superlative} {func} action by {user_id}",
+                    "When did user {user_id} last use {func}",
+                    "Get the {superlative} {func} event for {user_id}"
                 ],
-                'sql_conditions': ['user_id', 'function'],
+                'sql_conditions': ['user_id', 'func'],
                 'has_superlative': True
             },
             # Time-based Analysis Patterns
@@ -126,16 +148,16 @@ class IoTQueryGenerator:
             },
             {
                 'templates': [
-                    "Show me daily trends for {function}",
-                    "What's the daily pattern of {function} usage",
-                    "Analyze {function} usage by day",
-                    "Display day-by-day breakdown of {function}",
-                    "How often is {function} used each day",
-                    "Get daily statistics for {function}"
+                    "Show me daily trends for {func}",
+                    "What's the daily pattern of {func} usage",
+                    "Analyze {func} usage by day",
+                    "Display day-by-day breakdown of {func}",
+                    "How often is {func} used each day",
+                    "Get daily statistics for {func}"
                 ],
                 'sql_type': 'time_stats',
                 'time_grouping': 'date',
-                'sql_conditions': ['function']
+                'sql_conditions': ['func']
             },
             {
                 'templates': [
@@ -151,15 +173,15 @@ class IoTQueryGenerator:
             },
             {
                 'templates': [
-                    "Show me usage patterns by time of day for {function}",
-                    "When do people use {function} most",
-                    "What time of day is {function} most active",
-                    "Display hourly distribution of {function} usage",
-                    "Analyze peak times for {function}"
+                    "Show me usage patterns by time of day for {func}",
+                    "When do people use {func} most",
+                    "What time of day is {func} most active",
+                    "Display hourly distribution of {func} usage",
+                    "Analyze peak times for {func}"
                 ],
                 'sql_type': 'time_stats',
                 'time_grouping': 'hour',
-                'sql_conditions': ['function']
+                'sql_conditions': ['func']
             },
             {
                 'templates': [
@@ -208,7 +230,7 @@ class IoTQueryGenerator:
             'device_type': random.choice(self.device_types),
             'device_id': self.random_hex_id(),
             'user_id': self.random_hex_id(),
-            'function': random.choice(self.functions[random.choice(self.device_types)])
+            'func': random.choice(self.functions[random.choice(self.device_types)])  # function -> func
         }
         
         if pattern.get('has_superlative'):
@@ -224,6 +246,7 @@ class IoTQueryGenerator:
         elif pattern.get('sql_type') == 'stats':
             sql_query = self.generate_stats_query(pattern, components)
         else:
+            # function -> func in conditions
             conditions = [f"{cond} = '{components[cond]}'" for cond in pattern['sql_conditions']]
             
             sql_query = "SELECT * FROM transactions"
@@ -234,11 +257,16 @@ class IoTQueryGenerator:
             
             if pattern.get('has_superlative'):
                 sql_query += " LIMIT 1"
+            
+            # 패턴에 limit이 존재하면 추가
+            if 'limit' in pattern:
+                sql_query += f" LIMIT {pattern['limit']}"
         
         return {
             "input": input_query,
             "output": sql_query
         }
+
     
     def random_hex_id(self) -> str:
         return ''.join(random.choices('abcdef0123456789', k=128))
@@ -283,7 +311,7 @@ if __name__ == "__main__":
     
     # 3. 현재 디렉토리에 저장
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    filepath = os.path.join(current_dir, "query_dataset.json")
+    filepath = os.path.join(current_dir, "..", "..", "data", "query_dataset.json")
     generator.save_dataset(filepath)
     
     # 4. 확인을 위한 출력

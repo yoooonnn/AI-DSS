@@ -1,5 +1,3 @@
-
-# ai/src/utils/sql_assistant.py
 from config.model_config import ModelConfig
 from trainer.sql_trainer import SQLTrainer
 from utils.sql_executor import SQLExecutor
@@ -7,7 +5,7 @@ from utils.sql_executor import SQLExecutor
 class SQLAssistant:
     """자연어를 SQL로 변환하고 실행을 관리하는 클래스"""
     
-    def __init__(self, db_path):
+    def __init__(self, host, user, password, database, port=3306):
         """SQL 어시스턴트 초기화"""
         # AI 모델 초기화
         print("Loading model...")
@@ -17,7 +15,7 @@ class SQLAssistant:
         
         # SQL 실행기 초기화
         print("Connecting to database...")
-        self.executor = SQLExecutor(db_path)
+        self.executor = SQLExecutor(host, user, password, database, port)
     
     def process_query(self, text_input, execute=True):
         """자연어 쿼리 처리 및 실행"""

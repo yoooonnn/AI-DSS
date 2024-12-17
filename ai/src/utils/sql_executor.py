@@ -1,28 +1,30 @@
-# ai/src/utils/sql_executor.py
 import pandas as pd
-import sqlite3
-import os
+import pymysql
 
 class SQLExecutor:
-    """SQL 쿼리를 직접 실행하는 클래스"""
+    """SQL 쿼리를 직접 실행하는 클래스 (MySQL 전용)"""
     
-    def __init__(self, db_path):
-        """SQLite DB로 연결 초기화"""
-        self.db_path = db_path
-        
+    def __init__(self, host, user, password, database, port=3306):
+        """MySQL 데이터베이스 연결 초기화"""
         try:
-            # SQLite 데이터베이스에 연결
-            self.conn = sqlite3.connect(self.db_path)
-            print(f"Connected to SQLite database at {self.db_path}")
-            
+            self.conn = pymysql.connect(
+                host=host,
+                user=user,
+                password=password,
+                database=database,
+                port=port,
+                cursorclass=pymysql.cursors.DictCursor
+            )
+            print(f"Connected to MySQL database '{database}' at {host}:{port}")
         except Exception as e:
-            print(f"Error initializing database: {str(e)}")
+            print(f"Error initializing MySQL database: {str(e)}")
             raise
     
     def execute_query(self, query):
-        """SQL 쿼리 직접 실행"""
+        """SQL 쿼리 실행"""
         try:
-            return pd.read_sql_query(query, self.conn)
+            df = pd.read_sql_query(query, self.conn)
+            return df
         except Exception as e:
             print(f"Error executing query: {str(e)}")
             return None
@@ -31,4 +33,4 @@ class SQLExecutor:
         """데이터베이스 연결 종료"""
         if self.conn:
             self.conn.close()
-        print(f"Connection to database {self.db_path} closed.")
+            print("MySQL database connection closed.")
