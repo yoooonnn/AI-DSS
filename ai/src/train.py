@@ -39,7 +39,7 @@ def main():
     os.makedirs(config.checkpoint_dir, exist_ok=True)
 
     if args.mode == 'train':
-        file_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'query_data.json')
+        file_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'augmented_dataset.json')
         print(f"Loading training data from: {file_path}")
         
         try:

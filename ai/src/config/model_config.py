@@ -10,7 +10,7 @@ class ModelConfig:
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 
     model_name: str = "t5-small"
-    max_length: int = 128
+    max_length: int = 256
     train_batch_size: int = 8
     eval_batch_size: int = 8
     learning_rate: float = 3e-4

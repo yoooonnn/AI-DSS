@@ -33,8 +33,83 @@ class IoTQueryGenerator:
         self.time_ranges = ['hour', 'day', 'date', 'month', 'year']
         
         self.query_patterns = [
-            # Previous patterns remain the same...
-            
+            {
+                'templates': [
+                    "Show me the {device_type} history",
+                    "Get all {device_type} records",
+                    "Display {device_type} activities",
+                    "List all {device_type} events",
+                    "Retrieve {device_type} transactions",
+                    "Pull up {device_type} history",
+                    "What's the {device_type} history"
+                ],
+                'sql_conditions': ['device_type'],
+                'order': 'DESC'
+            },
+            # Function Specific Queries
+            {
+                'templates': [
+                    "When was the {function} function used",
+                    "Show me all {function} activities",
+                    "List every time {function} was used",
+                    "Display {function} events",
+                    "Get all {function} operations",
+                    "Find {function} history"
+                ],
+                'sql_conditions': ['function'],
+                'order': 'DESC'
+            },
+            # Device Specific with Superlatives
+            {
+                'templates': [
+                    "What's the {superlative} activity for device {device_id}",
+                    "Show me the {superlative} event from {device_id}",
+                    "Get the {superlative} record for {device_id}",
+                    "Find the {superlative} action by {device_id}",
+                    "Display the {superlative} operation of {device_id}"
+                ],
+                'sql_conditions': ['device_id'],
+                'has_superlative': True
+            },
+            # Statistics Queries
+            {
+                'templates': [
+                    "How are the {device_type} modes distributed",
+                    "What's the distribution of {device_type} colors",
+                    "Show me the breakdown of {device_type} brightness levels",
+                    "Display {device_type} mode usage statistics",
+                    "What are the most common {device_type} settings",
+                    "Analyze {device_type} mode patterns",
+                    "Give me statistics on {device_type} colors"
+                ],
+                'sql_type': 'stats',
+                'sql_conditions': ['device_type'],
+                'group_by': 'value'
+            },
+            # User Activity Queries
+            {
+                'templates': [
+                    "What has user {user_id} done recently",
+                    "Show me activities by user {user_id}",
+                    "Get all actions from user {user_id}",
+                    "List operations by {user_id}",
+                    "Display user {user_id} history",
+                    "Retrieve activities for user {user_id}"
+                ],
+                'sql_conditions': ['user_id'],
+                'order': 'DESC'
+            },
+            # Complex Queries
+            {
+                'templates': [
+                    "Find the {superlative} time user {user_id} used {function}",
+                    "Show me the {superlative} {function} action by {user_id}",
+                    "When did user {user_id} last use {function}",
+                    "Get the {superlative} {function} event for {user_id}"
+                ],
+                'sql_conditions': ['user_id', 'function'],
+                'has_superlative': True
+            },
             # Time-based Analysis Patterns
             {
                 'templates': [
@@ -85,6 +160,17 @@ class IoTQueryGenerator:
                 'sql_type': 'time_stats',
                 'time_grouping': 'hour',
                 'sql_conditions': ['function']
+            },
+            {
+                'templates': [
+                    "Show me all activities for user {user_id} on device {device_id}",
+                    "Find the most recent action by user {user_id} on device {device_id}",
+                    "What actions did user {user_id} take on device {device_id}",
+                    "When did user {user_id} last interact with device {device_id}",
+                    "Get the last activity by user {user_id} on {device_type} device {device_id}"
+                ],
+                'sql_conditions': ['user_id', 'device_id'],
+                'order': 'DESC'
             }
         ]
 
