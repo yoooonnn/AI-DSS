@@ -1,11 +1,15 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
-from models import db, SimulationLog 
+import sys
 import logging
 import os
 import json
 from datetime import datetime 
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from backend.database import db, SimulationLog 
 
 HTTP_200_OK = 200
 HTTP_400_BAD_REQUEST = 400
@@ -18,9 +22,8 @@ HTTP_500_INTERNAL_SERVER_ERROR = 500
 
 # Initialize the Flask application
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
 
-# CORS 설정 추가
-CORS(app, origins="http://localhost:3000", supports_credentials=True)
 
 # Set up logging configuration
 logging.basicConfig(
@@ -28,10 +31,13 @@ logging.basicConfig(
    format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
-# Configure database path and create directory if needed
-db_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data')
-os.makedirs(db_dir, exist_ok=True)
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(db_dir, "simulation_logs.db")}'
+# Configure MySQL database URI
+USERNAME = "root"
+PASSWORD = ""
+HOST = "localhost"  # MySQL 서버가 로컬에 있을 경우
+DATABASE = "iotlogs"
+
+app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOST}/{DATABASE}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize SQLAlchemy with Flask app
@@ -44,20 +50,10 @@ with app.app_context():
    logging.info("Database tables created successfully")
 
 
-# Adding CORS handling for OPTIONS preflight requests
-@app.after_request
-def after_request(response):
-    response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
-    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
-    response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
-    return response
-
-
 @app.route('/simulate', methods=['POST'])
 def simulate():
     try:
         data = request.json
-
         if not data:
             logging.error("No data provided in request")
             return jsonify({
@@ -128,7 +124,7 @@ def get_logs():
                 'user_id': log.user_id,
                 'action': log.action,
                 'value': log.value,
-                'function': log.function,
+                'func': log.func,
                 'timestamp': log.timestamp.isoformat(),
                 'state': state
             })
@@ -146,7 +142,16 @@ def get_logs():
             "code": HTTP_500_INTERNAL_SERVER_ERROR,
             "message": str(e)
         }), HTTP_500_INTERNAL_SERVER_ERROR
-    
+
+@app.route('/get_logs', methods=['OPTIONS'])
+def handle_options():
+    response = jsonify({})
+    response.headers.add('Access-Control-Allow-Origin', 'http://localhost:5173')
+    response.headers.add('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Accept')
+    return response
+
+
 def save_simulation_logs(logs):
    try:
        for log in logs:
@@ -169,7 +174,7 @@ def save_simulation_logs(logs):
                user_id=log['user_id'],
                action=log['action'],
                value=str(log['value']),
-               function=log['function'],
+               func=log['func'],
                timestamp=timestamp,
                state=state
            )
@@ -181,8 +186,6 @@ def save_simulation_logs(logs):
        logging.error(f"Error saving logs to database: {e}")
        db.session.rollback()
        raise
-   
 
-# Run the Flask application in debug mode
 if __name__ == '__main__':
    app.run(debug=True)
