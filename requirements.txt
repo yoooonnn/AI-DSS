@@ -12,3 +12,5 @@ nltk==3.9.1
 PyMySQL==1.1.1
 cryptography==44.0.0
 mysql-connector-python==9.1.0
+uvicorn==0.34.0
+fastapi==0.115.6

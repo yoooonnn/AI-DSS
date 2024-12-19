@@ -37,8 +37,8 @@ class Light:
         action = random.choices(list(action_weights.keys()), 
                                 list(action_weights.values()))[0]
 
-        # Initialize the function variable
-        function = None
+        # Initialize the func variable
+        func = None
         new_value = None
 
         # Generate new state based on selected action
@@ -47,32 +47,32 @@ class Light:
             if self.state['power'] == 'off':
                 new_value = 'on'  # Power turned on
                 self.state['power'] = 'on'
-                function = 'turnOn'  # Function name for this action
+                func = 'turnOn'  # func name for this action
             else:
                 new_value = 'off'  # Power turned off
                 self.state['power'] = 'off'
-                function = 'turnOff'  # Function name for this action
+                func = 'turnOff'  # func name for this action
         elif action == 'brightness':
             new_value = random.randint(0, 100)  # Random brightness between 0 and 100
             self.state['brightness'] = new_value
-            function = 'setBrightness'  # Function name for brightness adjustment
+            func = 'setBrightness'  # func name for brightness adjustment
         elif action == 'setMode':
             new_value = random.choice(light_states['mode'])  # Random mode (e.g., night, reading, etc.)
             self.state['mode'] = new_value
-            function = 'setMode'  # Function name for mode adjustment
+            func = 'setMode'  # func name for mode adjustment
         elif action == 'setColor':
             new_value = random.choice(light_states['color'])  # Random color
             self.state['color'] = new_value
-            function = 'setColor'  # Function name for color adjustment
+            func = 'setColor'  # func name for color adjustment
 
-        # Ensure that 'function' is always set before returning the dictionary
+        # Ensure that 'func' is always set before returning the dictionary
         return {
             'device_type': self.device_type,
             'device_id': self.device_id,
             'user_id': self.user_id,
             'action': action,  # 'mode', 'color', 'brightness', 'power' etc.
             'value': new_value,
-            'function': function,  # 'turnOn', 'setBrightness', 'setColor', 'setMode', etc.
+            'func': func,  # 'turnOn', 'setBrightness', 'setColor', 'setMode', etc.
             'timestamp': current_time,  # Time when the action was generated
             'state': self.state  # Current state after action
         }

@@ -18,21 +18,21 @@ class Speaker:
         # Choose an action (power, music, voice assistant)
         action = random.choice(['power', 'voice assistant'])
 
-        function = None
+        func = None
         new_value = None
 
         if action == 'power':
             # Toggle the power state
             if self.state['power'] == 'off':
                 new_value = 'on'
-                function = 'turnOn'
+                func = 'turnOn'
             else:
                 new_value = 'off'
-                function = 'turnOff'
+                func = 'turnOff'
             self.state['power'] = new_value
         elif action == 'voice assistant':
             new_value = random.choice(['weather', 'news', 'time', 'joke', 'reminder', 'music'])
-            function = f'get{new_value.capitalize()}'
+            func = f'get{new_value.capitalize()}'
 
         return {
             'device_type': self.device_type,
@@ -40,7 +40,7 @@ class Speaker:
             'user_id': self.user_id,
             'action': action,
             'value': new_value,
-            'function': function,
+            'func': func,
             'timestamp': current_time,
             'state': self.state
         }
