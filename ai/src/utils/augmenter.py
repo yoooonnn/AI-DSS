@@ -177,7 +177,7 @@ def process_and_augment_dataset(input_file: str, output_file: str, num_augmentat
 
     # 증강된 데이터 저장
     with open(output_file, "w", encoding="utf-8") as outfile:
-        json.dump({"augmented_dataset": augmented_data}, outfile, ensure_ascii=False, indent=4)
+        json.dump({"dataset": augmented_data}, outfile, ensure_ascii=False, indent=4)
 
 
 # 실행 예시
